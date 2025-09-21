@@ -29,30 +29,14 @@ class UnitOfWork(ABC):
     def product_repo(self):
         return self._product_repo
 
-    @product_repo.setter
-    def product_repo(self, product_repo: ProductRepository):
-        self._product_repo=product_repo
-
     @property
     def order_repo(self):
         return self._order_repo
-
-    @order_repo.setter
-    def order_repo(self, order_repo: OrderRepository):
-        self._order_repo=order_repo
 
     @property
     def customer_repo(self):
         return self._customer_repo
 
-    @customer_repo.setter
-    def customer_repo(self, customer_repo: CustomerRepository):
-        self._customer_repo=customer_repo
-
     @property
     def wishlist_repo(self):
         return self._wishlist_repo
-
-    @wishlist_repo.setter
-    def wishlist_repo(self, wishlist_repo: WishlistRepository):
-        self._wishlist_repo=wishlist_repo
