@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from domain.services import OrderService, ProductService, CustomerService, WishlistService
 from infrastructure.orm import Base
-from infrastructure.repositories import SqlAlchemyProductRepository, SqlAlchemyOrderRepository, SqlAlchemyCustomerRepository, SqlAlchemyWishlistRepository
 from infrastructure.unit_of_work import SqlAlchemyUnitOfWork
 from infrastructure.database import DATABASE_URL
 
@@ -28,9 +27,13 @@ def main():
         new_wishlist = wishlist_service.add_product_to_wishlist(new_wishlist.id, new_product)
         print(f"create wishlist: {new_wishlist}")
         new_order = order_service.create(id=1, customer=new_customer, products=[new_product])
-        new_order = order_service.add_product_to_order(new_order.id, new_product)
-        new_order = order_service.checkout_order(new_order.id)
         print(f"create order: {new_order}")
+        empty_order = order_service.create(id=2, customer=new_customer, products=[])
+        print(f"create empty order: {empty_order}")
+        updated_order = order_service.add_product_to_order(empty_order.id, new_product)
+        print(f"add product to order: {updated_order}")
+        checked_out_order = order_service.checkout_order(updated_order.id)
+        print(f"checkout order: {checked_out_order}")
         uow.commit()
 
 if __name__ == "__main__":

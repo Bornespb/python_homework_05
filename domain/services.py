@@ -52,6 +52,13 @@ class WishlistService(BaseService[Wishlist]):
         self.uow.commit()
         return wishlist
 
+    def create_order_from_wishlist(self, wishlist_id: int):
+        wishlist=self.get(wishlist_id)
+        order=wishlist.create_order()
+        self.uow.order_repo.add(order)
+        self.uow.commit()
+        return order
+
 class OrderService(BaseService[Order]):
     def __init__(self, uow: UnitOfWork):
         super().__init__(uow, uow.order_repo, Order)

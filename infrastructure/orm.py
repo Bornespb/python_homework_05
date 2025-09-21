@@ -1,46 +1,43 @@
-from sqlalchemy import Column, Integer, String, Float, Table, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, String, Float, Table, ForeignKey
+from sqlalchemy.orm import relationship, DeclarativeBase, mapped_column, Mapped
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 class ProductORM(Base):
     __tablename__ = 'products'
-    id = Column(Integer, primary_key=True)
-    name=Column(String)
-    quantity=Column(Integer)
-    price=Column(Float)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String)
+    quantity: Mapped[int] = mapped_column(Integer)
+    price: Mapped[float] = mapped_column(Float)
 
 class CustomerORM(Base):
     __tablename__ = 'customers'
-    id = Column(Integer, primary_key=True)
-    name=Column(String)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String)
 
-class WishlistORM(Base):
-    __tablename__ = 'wishlists'
-    id = Column(Integer, primary_key=True)
-    customer_id=Column(Integer, ForeignKey('customers.id'))
-    customer=relationship("CustomerORM")
+class OrderProductORM(Base):
+    __tablename__ = "order_products"
+    order_id: Mapped[int] = mapped_column(Integer, ForeignKey('orders.id'), primary_key=True)
+    product_id: Mapped[int] = mapped_column(Integer, ForeignKey('products.id'), primary_key=True)
+    product: Mapped[ProductORM] = relationship(lazy="joined")
 
 class OrderORM(Base):
     __tablename__ = "orders"
-    id = Column(Integer, primary_key=True)
-    customer_id=Column(Integer, ForeignKey('customers.id'))
-    customer=relationship("CustomerORM")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    customer_id: Mapped[int] = mapped_column(Integer, ForeignKey('customers.id'))
+    customer: Mapped[CustomerORM] = relationship(lazy="joined")
+    products: Mapped[list[OrderProductORM]] = relationship(cascade="all, delete-orphan", backref="orders")
 
+class WishlistProductORM(Base):
+    __tablename__ = "wishlist_products"
+    wishlist_id: Mapped[int] = mapped_column(Integer, ForeignKey('wishlists.id'), primary_key=True)
+    product_id: Mapped[int] = mapped_column(Integer, ForeignKey('products.id'), primary_key=True)
+    product: Mapped[ProductORM] = relationship(lazy="joined")
 
-order_product_associations = Table(
-    'order_product_associations', Base.metadata,
-    Column('order_id', ForeignKey('orders.id')),
-    Column('product_id', ForeignKey('products.id'))
-)
-
-OrderORM.products = relationship("ProductORM", secondary=order_product_associations)
-
-wishlist_product_associations = Table(
-    'wishlist_product_associations', Base.metadata,
-    Column('wishlist_id', ForeignKey('wishlists.id')),
-    Column('product_id', ForeignKey('products.id'))
-)
-
-WishlistORM.products = relationship("ProductORM", secondary=wishlist_product_associations)
+class WishlistORM(Base):
+    __tablename__ = 'wishlists'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    customer_id: Mapped[int] = mapped_column(Integer, ForeignKey('customers.id'))
+    customer: Mapped[CustomerORM] = relationship(lazy="joined")
+    products: Mapped[list[WishlistProductORM]] = relationship(cascade="all, delete-orphan", backref="wishlists")

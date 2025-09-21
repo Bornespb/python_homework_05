@@ -14,7 +14,7 @@ class BaseRepository(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    def list(self, ids: List[int] = None) -> List[T]:
+    def list(self, ids: List[int] | None = None) -> List[T]:
         pass
 
     @abstractmethod
