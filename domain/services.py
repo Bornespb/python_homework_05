@@ -4,7 +4,7 @@ from .models import Product, Order, Customer, Wishlist
 from .unit_of_work import UnitOfWork
 from .repositories import BaseRepository
 
-T = TypeVar('T', bound=Callable[[Any], Any])
+T = TypeVar('T')
 
 class BaseService(Generic[T]):
     def __init__(self, uow: UnitOfWork, repo: BaseRepository[T], model: Type[T]):
@@ -21,7 +21,7 @@ class BaseService(Generic[T]):
     def get(self, id: int) -> T:
         return self.repo.get(id)
 
-    def list(self, ids: List[int] = None) -> List[T]:
+    def list(self, ids: List[int] | None = None) -> List[T]:
         return self.repo.list(ids)
     
     def update(self, id: int, entity: T) -> T:
@@ -52,9 +52,9 @@ class WishlistService(BaseService[Wishlist]):
         self.uow.commit()
         return wishlist
 
-    def create_order_from_wishlist(self, wishlist_id: int):
+    def create_order_from_wishlist(self, wishlist_id: int, order_id: int):
         wishlist=self.get(wishlist_id)
-        order=wishlist.create_order()
+        order=Order(id=order_id, customer=wishlist.customer, products=wishlist.products)
         self.uow.order_repo.add(order)
         self.uow.commit()
         return order
@@ -63,9 +63,8 @@ class OrderService(BaseService[Order]):
     def __init__(self, uow: UnitOfWork):
         super().__init__(uow, uow.order_repo, Order)
 
-    def checkout_order(self, order_id: int) -> int:
+    def checkout_order(self, order_id: int) -> float:
         order=self.get(order_id)
-        self.uow.commit()
         return order.checkout()
     
     def add_product_to_order(self, order_id: int, product: Product):

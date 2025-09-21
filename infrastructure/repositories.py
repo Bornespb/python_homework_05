@@ -117,7 +117,7 @@ class SqlAlchemyOrderRepository(OrderRepository):
         orders=[]
         for order_orm in orders_orm:
             products = [
-                Product(id=p.id, name=p.name, quantity=p.quantity, price=p.price)
+                Product(id=p.product.id, name=p.product.name, quantity=p.product.quantity, price=p.product.price)
                 for p in order_orm.products
             ]
             orders.append(Order(id=order_orm.id, customer= Customer(id=order_orm.customer.id, name=order_orm.customer.name), products=products))
@@ -145,8 +145,11 @@ class SqlAlchemyWishlistRepository(WishlistRepository):
     def add(self, wishlist: Wishlist):
         wishlist_orm = WishlistORM()
         wishlist_orm.customer = self.session.query(CustomerORM).filter_by(id=wishlist.customer.id).one()
+        product_orms = [
+            self.session.query(ProductORM).filter_by(id=p.id).one() for p in wishlist.products
+        ]
         wishlist_orm.products = [
-            self.session.query(ProductORM).filter_by(id=p.id).one()
+            WishlistProductORM(product=i, wishlist_id=wishlist_orm.id) for i in product_orms
             for p in wishlist.products
         ]
         self.session.add(wishlist_orm)
@@ -157,7 +160,7 @@ class SqlAlchemyWishlistRepository(WishlistRepository):
             Product(id=p.product.id, name=p.product.name, quantity=p.product.quantity, price=p.product.price)
             for p in wishlist_orm.products
         ]
-        return Wishlist(id=wishlist_orm.id, customer=wishlist_orm.customer, products=products)
+        return Wishlist(id=wishlist_orm.id, customer=Customer(id=wishlist_orm.customer.id, name=wishlist_orm.customer.name), products=products)
     
     def list(self, ids: List[int] | None = None) -> List[Wishlist]:
         query=self.session.query(WishlistORM)
@@ -167,10 +170,10 @@ class SqlAlchemyWishlistRepository(WishlistRepository):
         wishlists=[]
         for wishlist_orm in wishlists_orm:
             products = [
-                Product(id=p.id, name=p.name, quantity=p.quantity, price=p.price)
+                Product(id=p.product.id, name=p.product.name, quantity=p.product.quantity, price=p.product.price)
                 for p in wishlist_orm.products
             ]
-            wishlists.append(Wishlist(id=wishlist_orm.id, customer=wishlist_orm.customer, products=products))
+            wishlists.append(Wishlist(id=wishlist_orm.id, customer=Customer(id=wishlist_orm.customer.id, name=wishlist_orm.customer.name), products=products))
         return wishlists
     
     def update(self, wishlist_id: int, wishlist: Wishlist):
@@ -180,7 +183,7 @@ class SqlAlchemyWishlistRepository(WishlistRepository):
             self.session.query(ProductORM).filter_by(id=p.id).one() for p in wishlist.products
         ]
         wishlist_orm.products = [
-            WishlistProductORM(product=product_orms[i], wishlist_id=wishlist_orm.id) for i in range(len(product_orms))
+            WishlistProductORM(product=i, wishlist_id=wishlist_orm.id) for i in product_orms
         ]
         self.session.add(wishlist_orm)
         return self.get(wishlist_id)

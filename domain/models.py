@@ -20,10 +20,13 @@ class Order:
     products: List[Product] = field(default_factory=list)
 
     def add_product(self, product: Product) -> None:
-        self.products.append(product)
+        if product in self.products:
+            self.products[self.products.index(product)].quantity += 1
+        else:
+            self.products.append(product)
 
-    def checkout(self) -> int:
-        return sum(product.price for product in self.products)
+    def checkout(self) -> float:
+        return sum(product.price * product.quantity for product in self.products)
 
 @dataclass
 class Wishlist:
@@ -32,7 +35,7 @@ class Wishlist:
     products: List[Product] = field(default_factory=list)
 
     def add_product(self, product: Product) -> None:
-        self.products.append(product)
-
-    def create_order(self) -> Order:
-        return Order(customer=self.customer, products=self.products)
+        if product in self.products:
+            self.products[self.products.index(product)].quantity += 1
+        else:
+            self.products.append(product)
