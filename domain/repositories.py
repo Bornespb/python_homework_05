@@ -2,15 +2,16 @@ from abc import ABC, abstractmethod
 from typing import List, TypeVar, Generic
 from .models import Product, Order, Customer, Wishlist
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class BaseRepository(ABC, Generic[T]):
     @abstractmethod
     def add(self, entity: T):
         pass
-    
+
     @abstractmethod
-    def get(self, id: int) -> T:
+    def get(self, id_: int) -> T:
         pass
 
     @abstractmethod
@@ -18,21 +19,25 @@ class BaseRepository(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    def update(self, id: int, entity: T):
+    def update(self, id_: int, entity: T):
         pass
 
     @abstractmethod
-    def delete(self, id: int):
+    def delete(self, id_: int):
         pass
+
 
 class ProductRepository(BaseRepository[Product]):
     pass
 
+
 class CustomerRepository(BaseRepository[Customer]):
     pass
 
+
 class WishlistRepository(BaseRepository[Wishlist]):
     pass
+
 
 class OrderRepository(BaseRepository[Order]):
     pass

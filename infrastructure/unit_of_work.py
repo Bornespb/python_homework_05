@@ -1,16 +1,22 @@
-from domain.unit_of_work import UnitOfWork
-from infrastructure.repositories import SqlAlchemyProductRepository, SqlAlchemyOrderRepository, SqlAlchemyCustomerRepository, SqlAlchemyWishlistRepository
 from sqlalchemy.orm import Session
+from domain.unit_of_work import UnitOfWork
+from infrastructure.repositories import (
+    SqlAlchemyProductRepository,
+    SqlAlchemyOrderRepository,
+    SqlAlchemyCustomerRepository,
+    SqlAlchemyWishlistRepository,
+)
+
 
 class SqlAlchemyUnitOfWork(UnitOfWork):
-
     def __init__(self, session: Session):
         super().__init__(
             SqlAlchemyProductRepository(session),
             SqlAlchemyOrderRepository(session),
             SqlAlchemyCustomerRepository(session),
-            SqlAlchemyWishlistRepository(session))
-        self.session=session
+            SqlAlchemyWishlistRepository(session),
+        )
+        self.session = session
 
     def __enter__(self):
         return self

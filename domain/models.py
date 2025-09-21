@@ -1,21 +1,24 @@
 from dataclasses import dataclass, field
 from typing import List
 
+
 @dataclass
 class Product:
-    id: int
+    id_: int
     name: str
     quantity: int
     price: float
 
+
 @dataclass
 class Customer:
-    id: int
+    id_: int
     name: str
+
 
 @dataclass
 class Order:
-    id: int
+    id_: int
     customer: Customer
     products: List[Product] = field(default_factory=list)
 
@@ -28,9 +31,10 @@ class Order:
     def checkout(self) -> float:
         return sum(product.price * product.quantity for product in self.products)
 
+
 @dataclass
 class Wishlist:
-    id: int
+    id_: int
     customer: Customer
     products: List[Product] = field(default_factory=list)
 
