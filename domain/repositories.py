@@ -1,29 +1,43 @@
 from abc import ABC, abstractmethod
-from typing import List
-from .models import Product, Order
+from typing import List, TypeVar, Generic
+from .models import Product, Order, Customer, Wishlist
 
-class ProductRepository(ABC):
+T = TypeVar("T")
+
+
+class BaseRepository(ABC, Generic[T]):
     @abstractmethod
-    def add(self, product: Product):
+    def add(self, entity: T):
         pass
 
     @abstractmethod
-    def get(self, product_id: int) -> Product:
+    def get(self, id_: int) -> T:
         pass
 
     @abstractmethod
-    def list(self) -> List[Product]:
-        pass
-
-class OrderRepository(ABC):
-    @abstractmethod
-    def add(self, order: Order):
+    def list(self, ids: List[int] | None = None) -> List[T]:
         pass
 
     @abstractmethod
-    def get(self, order_id: int) -> Order:
+    def update(self, id_: int, entity: T):
         pass
 
     @abstractmethod
-    def list(self) -> List[Order]:
+    def delete(self, id_: int):
         pass
+
+
+class ProductRepository(BaseRepository[Product]):
+    pass
+
+
+class CustomerRepository(BaseRepository[Customer]):
+    pass
+
+
+class WishlistRepository(BaseRepository[Wishlist]):
+    pass
+
+
+class OrderRepository(BaseRepository[Order]):
+    pass

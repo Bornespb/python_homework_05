@@ -1,28 +1,71 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from domain.services import WarehouseService
+from domain.services import (
+    OrderService,
+    ProductService,
+    CustomerService,
+    WishlistService,
+)
 from infrastructure.orm import Base
-from infrastructure.repositories import SqlAlchemyProductRepository, SqlAlchemyOrderRepository
 from infrastructure.unit_of_work import SqlAlchemyUnitOfWork
 from infrastructure.database import DATABASE_URL
 
 engine = create_engine(DATABASE_URL)
-SessionFactory=sessionmaker(bind=engine)
+SessionFactory = sessionmaker(bind=engine)
 Base.metadata.create_all(engine)
 
+
 def main():
-    session = SessionFactory()
-    product_repo = SqlAlchemyProductRepository(session)
-    order_repo = SqlAlchemyOrderRepository(session)
+    uow = SqlAlchemyUnitOfWork(SessionFactory())
 
-    uow = SqlAlchemyUnitOfWork(session)
+    product_service = ProductService(uow)
+    order_service = OrderService(uow)
+    customer_service = CustomerService(uow)
+    wishlist_service = WishlistService(uow)
 
-    warehouse_service = WarehouseService(product_repo, order_repo)
     with uow:
-        new_product = warehouse_service.create_product(name="test1", quantity=1, price=100)
+        new_product1 = product_service.create(
+            id_=1, name="product1", quantity=1, price=100
+        )
+        print(f"create product: {new_product1}")
+        new_product2 = product_service.create(
+            id_=2, name="product2", quantity=1, price=200
+        )
+        print(f"create product: {new_product2}")
+        new_customer = customer_service.create(id_=1, name="customer1")
+        print(f"create customer: {new_customer}")
+        new_wishlist = wishlist_service.create(id_=1, customer=new_customer)
+        print(f"create wishlist: {new_wishlist}")
+        new_wishlist = wishlist_service.add_product_to_wishlist(
+            new_wishlist.id_, new_product1
+        )
+        print(f"add product to wishlist: {new_wishlist}")
+        new_wishlist = wishlist_service.add_product_to_wishlist(
+            new_wishlist.id_, new_product2
+        )
+        print(f"create wishlist: {new_wishlist}")
+        order_from_wishlist = wishlist_service.create_order_from_wishlist(
+            wishlist_id=new_wishlist.id_, order_id=99
+        )
+        print(f"create order from wishlist: {order_from_wishlist}")
+        new_order = order_service.create(
+            id_=2, customer=new_customer, products=[new_product1]
+        )
+        print(f"create order: {new_order}")
+        empty_order = order_service.create(id_=3, customer=new_customer, products=[])
+        print(f"create empty order: {empty_order}")
+        updated_order = order_service.add_product_to_order(
+            empty_order.id_, new_product1
+        )
+        print(f"add product to order: {updated_order}")
+        updated_order = order_service.add_product_to_order(
+            updated_order.id_, new_product2
+        )
+        print(f"add product to order: {updated_order}")
+        checked_out_order = order_service.checkout_order(updated_order.id_)
+        print(f"checkout order: {checked_out_order}")
         uow.commit()
-        print(f"create product: {new_product}")
-        # todo add some actions
+
 
 if __name__ == "__main__":
     main()
